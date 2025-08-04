@@ -1,0 +1,52 @@
+name = "agentprobe-community"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Worker configuration will use TypeScript directly
+
+# Environment variables for development
+[vars]
+ENVIRONMENT = "development"
+LOG_LEVEL = "debug"
+CORS_ORIGINS = "http://localhost:3000,https://agentprobe.dev"
+
+# D1 Database binding for development
+[[d1_databases]]
+binding = "DB"
+database_name = "agentprobe-community-dev"
+database_id = "placeholder"  # Will be replaced after creating database
+migrations_dir = "./migrations"
+
+# Analytics Engine for metrics (optional)
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "agentprobe_metrics"
+
+# Production environment configuration
+[env.production]
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", CORS_ORIGINS = "https://agentprobe.dev,https://www.agentprobe.dev" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "agentprobe-community-prod"
+database_id = "placeholder"  # Will be replaced after creating production database
+migrations_dir = "./migrations"
+
+[[env.production.analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "agentprobe_metrics_prod"
+
+# Staging environment configuration
+[env.staging]
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "info", CORS_ORIGINS = "https://staging.agentprobe.dev" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "agentprobe-community-staging"
+database_id = "placeholder"  # Will be replaced after creating staging database
+migrations_dir = "./migrations"
+
+[[env.staging.analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "agentprobe_metrics_staging"

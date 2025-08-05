@@ -90,7 +90,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply agentprobe-community-staging --remote
+          command: d1 migrations apply agentprobe-community-staging --remote --env staging
           workingDirectory: packages/api
 
   deploy-production:
@@ -133,7 +133,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply agentprobe-community-prod --remote
+          command: d1 migrations apply agentprobe-community-prod --remote --env production
           workingDirectory: packages/api
 
       - name: Health check

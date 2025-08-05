@@ -168,7 +168,7 @@ function generateLlmsTxt() {
 - **Styling**: Tailwind CSS with custom design system
 - **Charts**: Recharts for interactive data visualizations
 - **Data**: React Query for state management and caching
-- **Deployment**: Cloudflare Pages with static export
+- **Deployment**: Cloudflare Workers with static assets
 
 ## Project Structure
 

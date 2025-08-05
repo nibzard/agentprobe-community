@@ -1,6 +1,6 @@
 # AgentProbe Community Dashboard
 
-A modern web interface for visualizing community CLI test results, built with Next.js and deployed on Cloudflare Pages.
+A modern web interface for visualizing community CLI test results, built with Next.js and deployed on Cloudflare Workers.
 
 ## 🚀 Current Deployments
 
@@ -17,7 +17,7 @@ A modern web interface for visualizing community CLI test results, built with Ne
 - **Charts**: Recharts
 - **UI Components**: Custom components with class-variance-authority
 - **Icons**: Lucide React
-- **Deployment**: Cloudflare Pages (Static Export)
+- **Deployment**: Cloudflare Workers (Static Assets)
 
 ## ✨ Features
 
@@ -74,7 +74,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard
 ```
 
-For production deployments, set these in your Cloudflare Pages environment:
+For production deployments, these are configured in the GitHub Actions workflow:
 ```env
 NEXT_PUBLIC_API_URL=https://agentprobe-community-production.nikola-balic.workers.dev
 NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard
@@ -178,21 +178,26 @@ src/
 
 ## 🚀 Deployment
 
-### Cloudflare Pages
-The dashboard is deployed as a static site on Cloudflare Pages:
+### Cloudflare Workers
+The dashboard is deployed as static assets on Cloudflare Workers:
 
 1. **Build Process**: Next.js static export
-2. **CDN Distribution**: Global edge deployment
-3. **Automatic Deployments**: GitHub integration
-4. **Preview Deployments**: Branch-based previews
+2. **Workers Runtime**: Enhanced performance and features
+3. **Automatic Deployments**: GitHub Actions integration
+4. **Environment Deployments**: Staging and production environments
 
 ### Manual Deployment
 ```bash
 # Build static export
 pnpm run export
 
-# Deploy to Cloudflare Pages (via CLI)
-wrangler pages deploy out --project-name agentprobe-dashboard
+# Deploy to Cloudflare Workers (from project root)
+pnpm run deploy:dashboard:staging    # Staging
+pnpm run deploy:dashboard:production # Production
+
+# Or from dashboard directory
+wrangler deploy --env staging        # Staging  
+wrangler deploy --env production     # Production
 ```
 
 ### Deployment Configuration
@@ -206,7 +211,7 @@ wrangler pages deploy out --project-name agentprobe-dashboard
 ### Next.js Configuration (`next.config.js`)
 ```javascript
 const nextConfig = {
-  output: 'export',           // Static export for Cloudflare Pages
+  output: 'export',           // Static export for Cloudflare Workers
   trailingSlash: true,        // Consistent routing
   images: {
     unoptimized: true,        // Required for static export

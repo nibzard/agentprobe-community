@@ -19,7 +19,12 @@
       "Bash(npx wrangler d1 execute:*)",
       "Bash(gh run view:*)",
       "Bash(git add:*)",
-      "Bash(NEXT_PUBLIC_API_URL=https://agentprobe-community-production.nikola-balic.workers.dev NEXT_PUBLIC_APP_NAME=\"AgentProbe Community Dashboard\" pnpm --filter @agentprobe/dashboard run export)"
+      "Bash(NEXT_PUBLIC_API_URL=https://agentprobe-community-production.nikola-balic.workers.dev NEXT_PUBLIC_APP_NAME=\"AgentProbe Community Dashboard\" pnpm --filter @agentprobe/dashboard run export)",
+      "Bash(pnpm wrangler dev:*)",
+      "Bash(pnpm wrangler deploy:*)",
+      "Bash(pnpm --filter @agentprobe/api run build)",
+      "Bash(pnpm --filter @agentprobe/api run type-check)",
+      "Bash(pnpm -w run deploy:dashboard:staging)"
     ],
     "deny": []
   }

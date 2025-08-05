@@ -14,7 +14,9 @@
     "build:dashboard": "pnpm --filter @agentprobe/dashboard build",
     "build": "pnpm run build:api && pnpm run build:dashboard",
     "deploy:api": "pnpm --filter @agentprobe/api deploy",
-    "deploy:dashboard": "pnpm --filter @agentprobe/dashboard export",
+    "deploy:dashboard": "pnpm --filter @agentprobe/dashboard run export && pnpm --filter @agentprobe/dashboard exec wrangler deploy",
+    "deploy:dashboard:staging": "pnpm --filter @agentprobe/dashboard run export && pnpm --filter @agentprobe/dashboard exec wrangler deploy --env staging",
+    "deploy:dashboard:production": "pnpm --filter @agentprobe/dashboard run export && pnpm --filter @agentprobe/dashboard exec wrangler deploy --env production",
     "test": "pnpm --filter @agentprobe/api test",
     "type-check": "pnpm run --parallel type-check"
   },

@@ -1,0 +1,24 @@
+name = "agentprobe-dashboard"
+compatibility_date = "2025-01-01"
+
+# Enable preview URLs for development
+preview_urls = true
+
+# Static assets configuration
+[assets]
+directory = "./out/"
+not_found_handling = "single-page-application"
+
+# Development environment (default)
+[vars]
+ENVIRONMENT = "development"
+
+# Staging environment
+[env.staging]
+name = "agentprobe-dashboard-staging"
+vars = { ENVIRONMENT = "staging" }
+
+# Production environment  
+[env.production]
+name = "agentprobe-dashboard"
+vars = { ENVIRONMENT = "production" }

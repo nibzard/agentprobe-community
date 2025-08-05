@@ -1,43 +1,13 @@
 # AgentProbe Community Dashboard - Deployment Guide
 
-## 🚀 Cloudflare Pages Deployment
+## 🚀 Cloudflare Workers Deployment
 
 ### Prerequisites
 - Cloudflare account
 - GitHub repository for the dashboard code
 - AgentProbe Community API deployed and accessible
 
-### Method 1: Cloudflare Pages Dashboard (Recommended)
-
-1. **Connect Repository**
-   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
-   - Navigate to Pages > Create a project
-   - Connect your GitHub account
-   - Select the `agentprobe-community` repository
-   - Choose the `dashboard` folder as the root directory
-
-2. **Build Configuration**
-   ```
-   Framework preset: Next.js
-   Build command: npm run build
-   Build output directory: out
-   Root directory: dashboard (if deploying from subdirectory)
-   ```
-
-3. **Environment Variables**
-   Add these in the Cloudflare Pages dashboard:
-   ```
-   NEXT_PUBLIC_API_URL=https://your-api-domain.workers.dev
-   NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard
-   NODE_VERSION=18
-   ```
-
-4. **Deploy**
-   - Click "Save and Deploy"
-   - Cloudflare will automatically build and deploy your site
-   - You'll get a `*.pages.dev` URL
-
-### Method 2: Wrangler CLI
+### Method 1: Wrangler CLI (Recommended)
 
 1. **Install Wrangler**
    ```bash
@@ -51,24 +21,53 @@
 
 3. **Build for Production**
    ```bash
-   cd dashboard
-   npm run build
+   cd packages/dashboard
+   pnpm run export
    ```
 
-4. **Deploy to Pages**
+4. **Deploy to Workers**
    ```bash
-   wrangler pages deploy out --project-name agentprobe-dashboard
+   # Deploy to staging
+   wrangler deploy --env staging
+   
+   # Deploy to production
+   wrangler deploy --env production
+   ```
+
+5. **Configuration**
+   The deployment uses `wrangler.toml` configuration with staging and production environments pre-configured.
+
+### Method 2: Monorepo Scripts (From Root)
+
+1. **Install Dependencies**
+   ```bash
+   pnpm install
+   ```
+
+2. **Deploy to Staging**
+   ```bash
+   pnpm run deploy:dashboard:staging
+   ```
+
+3. **Deploy to Production**
+   ```bash
+   pnpm run deploy:dashboard:production
+   ```
+
+4. **Deploy to Default Environment**
+   ```bash
+   pnpm run deploy:dashboard
    ```
 
 ### Custom Domain Setup
 
 1. **Add Custom Domain**
-   - In Cloudflare Pages dashboard, go to your project
-   - Click "Custom domains" tab
-   - Add your domain (e.g., `dashboard.agentprobe.dev`)
+   - In Cloudflare Workers dashboard, go to your Worker
+   - Click "Settings" > "Triggers"
+   - Add a custom domain (e.g., `dashboard.agentprobe.dev`)
 
 2. **DNS Configuration**
-   - Add a CNAME record pointing to your `*.pages.dev` URL
+   - Add a CNAME record pointing to your `*.workers.dev` URL
    - Or use Cloudflare as your DNS provider for automatic setup
 
 ## 🔧 Build Configuration
@@ -89,7 +88,7 @@ NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard (Staging)
 
 ### Static Export Configuration
 
-The dashboard is configured for static export to work with Cloudflare Pages:
+The dashboard is configured for static export to work with Cloudflare Workers static assets:
 
 ```javascript
 // next.config.js
@@ -104,10 +103,10 @@ const nextConfig = {
 
 ## 🚦 CI/CD with GitHub Actions
 
-Create `.github/workflows/deploy-dashboard.yml`:
+The dashboard uses GitHub Actions for automatic deployment. See `.github/workflows/deploy-dashboard.yml`:
 
 ```yaml
-name: Deploy Dashboard to Cloudflare Pages
+name: Deploy Dashboard to Cloudflare Workers
 
 on:
   push:
@@ -146,14 +145,12 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_APP_NAME: AgentProbe Community Dashboard
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: agentprobe-dashboard
-          directory: dashboard/out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to Cloudflare Workers
+        run: pnpm wrangler deploy --env production
+        working-directory: packages/dashboard
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 ```
 
 ### Required GitHub Secrets
@@ -167,16 +164,18 @@ Add these secrets to your GitHub repository:
 ## 🔄 Multiple Environments
 
 ### Production
-- **URL**: `https://dashboard.agentprobe.dev` (or your custom domain)
-- **API**: `https://agentprobe-community-production.workers.dev`
+- **Worker**: `agentprobe-dashboard`
+- **URL**: `https://agentprobe-dashboard.nikola-balic.workers.dev` (or custom domain)
+- **API**: `https://agentprobe-community-production.nikola-balic.workers.dev`
 - **Branch**: `main`
 
 ### Staging
-- **URL**: `https://staging-dashboard.agentprobe.dev`
-- **API**: `https://agentprobe-community-staging.workers.dev`
+- **Worker**: `agentprobe-dashboard-staging`
+- **URL**: `https://agentprobe-dashboard-staging.nikola-balic.workers.dev` (or custom domain)
+- **API**: `https://agentprobe-community-staging.nikola-balic.workers.dev`
 - **Branch**: `develop`
 
-Set up different Pages projects for each environment with appropriate environment variables.
+Environment-specific configurations are managed through `wrangler.toml` environments.
 
 ## 📊 Performance Optimization
 
@@ -188,18 +187,23 @@ npm run build
 ```
 
 ### Caching Strategy
-Cloudflare Pages automatically provides:
+Cloudflare Workers with static assets automatically provides:
 - Static asset caching with optimal cache headers
 - Global CDN distribution
 - Automatic compression (gzip/brotli)
+- Enhanced performance through Workers runtime
 
 ## 🧪 Testing Deployment
 
 ### Local Testing
 ```bash
-cd dashboard
-npm run build
+cd packages/dashboard
+pnpm run export
+# Static file testing
 npx serve out
+
+# Or test with Workers runtime
+wrangler dev
 ```
 
 ### Production Testing
@@ -265,10 +269,10 @@ npm run build
 ## 🔄 Rollback Procedure
 
 ### Quick Rollback
-1. Go to Cloudflare Pages dashboard
-2. Navigate to your project's Deployments tab
-3. Find the previous working deployment
-4. Click "Retry deployment" or "Promote to production"
+1. Go to Cloudflare Workers dashboard
+2. Navigate to your Worker's "Deployments" tab
+3. Find the previous working version
+4. Click "Rollback" to that version
 
 ### Git-based Rollback
 1. Revert the problematic commit
@@ -277,12 +281,13 @@ npm run build
 
 ## 📞 Support Resources
 
-- **Cloudflare Pages Documentation**: https://developers.cloudflare.com/pages/
+- **Cloudflare Workers Documentation**: https://developers.cloudflare.com/workers/
+- **Workers Static Assets**: https://developers.cloudflare.com/workers/static-assets/
 - **Next.js Static Export**: https://nextjs.org/docs/app/building-your-application/deploying/static-exports
 - **GitHub Actions**: https://docs.github.com/en/actions
 
 ---
 
-**Current Status**: Ready for deployment
+**Current Status**: Migrated to Cloudflare Workers
 **Recommended Domain**: `dashboard.agentprobe.dev`
-**Build Output**: Static files optimized for CDN serving
+**Build Output**: Static files served via Workers with enhanced performance

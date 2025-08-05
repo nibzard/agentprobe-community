@@ -25,7 +25,7 @@ dataset = "agentprobe_metrics"
 
 # Production environment configuration
 [env.production]
-vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", CORS_ORIGINS = "https://agentprobe.dev,https://www.agentprobe.dev" }
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", CORS_ORIGINS = "https://agentprobe.dev,https://www.agentprobe.dev,https://agentprobe-dashboard.nikola-balic.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -39,7 +39,7 @@ dataset = "agentprobe_metrics_prod"
 
 # Staging environment configuration
 [env.staging]
-vars = { ENVIRONMENT = "staging", LOG_LEVEL = "info", CORS_ORIGINS = "https://staging.agentprobe.dev" }
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "info", CORS_ORIGINS = "https://staging.agentprobe.dev,https://agentprobe-dashboard.nikola-balic.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB"

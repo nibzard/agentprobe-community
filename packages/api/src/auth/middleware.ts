@@ -83,7 +83,7 @@ async function logSecurityEvent(
  */
 function createAuthErrorResponse(
   c: Context,
-  status: number,
+  status: 401 | 403 | 429 | 500,
   error: string,
   message?: string,
   code?: string

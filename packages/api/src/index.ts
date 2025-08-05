@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { createDb } from './db';
+import { createDb, DrizzleD1 } from './db';
 import { results, toolStats, frictionPointStats, apiKeys, securityEvents } from './db/schema';
 import { eq, and, desc, sql, count, gte, lte, inArray } from 'drizzle-orm';
 import type { 
@@ -51,7 +51,9 @@ import {
 import { 
   securityHeadersMiddleware, 
   sanitizationMiddleware, 
-  SecurityUtils 
+  SecurityUtils,
+  InputSanitizer,
+  Validator
 } from './auth/security';
 import { cleanupRateLimits, getRateLimitStatus } from './auth/rate-limiter';
 
@@ -60,7 +62,15 @@ type Bindings = {
   ENVIRONMENT: string;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+type Variables = {
+  db: DrizzleD1;
+  auth: AuthContext;
+  sanitize: typeof InputSanitizer;
+  validator: typeof Validator;
+  security: typeof SecurityUtils;
+};
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // Database middleware - inject DB instance into context
 app.use('*', async (c, next) => {
@@ -552,7 +562,7 @@ app.post('/api/v1/auth/keys', adminOnly(), zValidator('json', createApiKeySchema
 
 // API keys list query validation schema
 const apiKeysListQuerySchema = z.object({
-  active: z.string().transform(val => val !== 'false').optional().default(true),
+  active: z.string().transform(val => val !== 'false').optional().default('true'),
 });
 
 // List API keys (key management permission required)
@@ -698,14 +708,13 @@ app.get('/api/v1/auth/security-events', adminOnly(), zValidator('query', securit
     const eventType = params.event_type;
     
     // SECURITY FIX: Build secure query with validated parameters only
-    let query = db.select().from(securityEvents);
+    const baseQuery = db.select().from(securityEvents);
     
     // SECURITY: Only apply eventType filter with validated enum value
     // This prevents SQL injection by ensuring only allowlisted values are used
-    if (eventType) {
-      // eventType has been validated by Zod enum - safe to use in query
-      query = query.where(eq(securityEvents.eventType, eventType));
-    }
+    const query = eventType 
+      ? baseQuery.where(eq(securityEvents.eventType, eventType))
+      : baseQuery;
     
     const events = await query
       .orderBy(desc(securityEvents.timestamp))
@@ -728,6 +737,7 @@ app.get('/api/v1/auth/security-events', adminOnly(), zValidator('query', securit
     // Log security event access error (without exposing sensitive details)
     try {
       const auth: AuthContext = c.get('auth');
+      const db = c.get('db');
       await db.insert(securityEvents).values({
         eventType: 'security_events_error',
         keyId: auth.keyId,

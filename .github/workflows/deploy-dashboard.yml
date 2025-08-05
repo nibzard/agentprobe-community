@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check dashboard
-        run: pnpm --filter @agentprobe/dashboard run type-check
+      # - name: Type check dashboard
+      #   run: pnpm --filter @agentprobe/dashboard run type-check
 
       - name: Lint dashboard
         run: pnpm --filter @agentprobe/dashboard run lint

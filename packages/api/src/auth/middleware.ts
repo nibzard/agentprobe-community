@@ -318,7 +318,166 @@ export function optionalAuthMiddleware() {
     }
 
     // API key provided, validate it
-    await authMiddleware()(c, next);
+    const db: DrizzleD1 = c.get('db') || (() => {
+      throw new Error('Database not available in context');
+    })();
+
+    const clientInfo = getClientInfo(c);
+
+    // Validate API key format
+    if (!isValidApiKeyFormat(apiKey)) {
+      await logSecurityEvent(db, 'auth_invalid_format', null, clientInfo, { apiKey: apiKey.substring(0, 10) + '...' });
+      return createAuthErrorResponse(
+        c,
+        401,
+        'Invalid API key format',
+        'The provided API key format is invalid.',
+        'AUTH_INVALID_FORMAT'
+      );
+    }
+
+    const keyId = extractKeyId(apiKey);
+    const secret = extractSecret(apiKey);
+
+    if (!keyId || !secret) {
+      await logSecurityEvent(db, 'auth_invalid_format', keyId, clientInfo);
+      return createAuthErrorResponse(
+        c,
+        401,
+        'Invalid API key format',
+        'The provided API key format is invalid.',
+        'AUTH_INVALID_FORMAT'
+      );
+    }
+
+    try {
+      // Look up API key in database
+      const keyRecord = await db
+        .select()
+        .from(apiKeys)
+        .where(eq(apiKeys.keyId, keyId))
+        .limit(1);
+
+      if (keyRecord.length === 0) {
+        await logSecurityEvent(db, 'auth_key_not_found', keyId, clientInfo);
+        return createAuthErrorResponse(
+          c,
+          401,
+          'Invalid API key',
+          'The provided API key is not valid.',
+          'AUTH_INVALID'
+        );
+      }
+
+      const keyData = keyRecord[0];
+
+      // Check if key is active
+      if (!keyData.isActive) {
+        await logSecurityEvent(db, 'auth_key_inactive', keyId, clientInfo);
+        return createAuthErrorResponse(
+          c,
+          401,
+          'API key inactive',
+          'The provided API key has been deactivated.',
+          'AUTH_INACTIVE'
+        );
+      }
+
+      // Check if key has expired
+      if (keyData.expiresAt) {
+        const expirationDate = new Date(keyData.expiresAt);
+        if (expirationDate < new Date()) {
+          await logSecurityEvent(db, 'auth_key_expired', keyId, clientInfo);
+          return createAuthErrorResponse(
+            c,
+            401,
+            'API key expired',
+            'The provided API key has expired.',
+            'AUTH_EXPIRED'
+          );
+        }
+      }
+
+      // Verify the secret
+      const isValidSecret = await verifyApiKey(secret, keyData.hashedKey);
+      if (!isValidSecret) {
+        await logSecurityEvent(db, 'auth_invalid_secret', keyId, clientInfo);
+        return createAuthErrorResponse(
+          c,
+          401,
+          'Invalid API key',
+          'The provided API key is not valid.',
+          'AUTH_INVALID'
+        );
+      }
+
+      // Check rate limit
+      const rateLimitResult = await checkRateLimit(db, keyId, keyData.rateLimit);
+      const rateLimitHeaders = getRateLimitHeaders(rateLimitResult);
+      
+      // Add rate limit headers to response
+      Object.entries(rateLimitHeaders).forEach(([key, value]) => {
+        c.res.headers.set(key, value);
+      });
+
+      if (!rateLimitResult.allowed) {
+        await logSecurityEvent(db, 'rate_limit_exceeded', keyId, clientInfo, {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining
+        });
+        
+        const response = createAuthErrorResponse(
+          c,
+          429,
+          'Rate limit exceeded',
+          `API rate limit exceeded. Limit: ${rateLimitResult.limit} requests per hour.`,
+          'RATE_LIMIT_EXCEEDED'
+        );
+        
+        if (rateLimitResult.retryAfter) {
+          response.headers.set('Retry-After', rateLimitResult.retryAfter.toString());
+        }
+        
+        return response;
+      }
+
+      // Parse permissions
+      const permissions: Permission[] = JSON.parse(keyData.permissions || '["read"]');
+
+      // Update last used timestamp
+      await db
+        .update(apiKeys)
+        .set({ lastUsedAt: new Date().toISOString() })
+        .where(eq(apiKeys.id, keyData.id));
+
+      // Set auth context for authenticated user
+      const authContext: AuthContext = {
+        keyId: keyData.keyId,
+        permissions,
+        rateLimit: keyData.rateLimit,
+        authenticated: true
+      };
+
+      c.set('auth', authContext);
+
+      // Log successful authentication
+      await logSecurityEvent(db, 'auth_success', keyId, clientInfo);
+
+      await next();
+    } catch (error) {
+      console.error('Authentication error:', error);
+      await logSecurityEvent(db, 'auth_error', keyId, clientInfo, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      return createAuthErrorResponse(
+        c,
+        500,
+        'Authentication error',
+        'An error occurred during authentication.',
+        'AUTH_ERROR'
+      );
+    }
   };
 }
 

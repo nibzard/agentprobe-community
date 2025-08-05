@@ -60,6 +60,7 @@ import { cleanupRateLimits, getRateLimitStatus } from './auth/rate-limiter';
 type Bindings = {
   DB: D1Database;
   ENVIRONMENT: string;
+  CORS_ORIGINS: string;
 };
 
 type Variables = {
@@ -118,18 +119,17 @@ app.use('*', async (c, next) => {
   await next();
 });
 
-// CORS middleware
-app.use('*', cors({
-  origin: [
-    'http://localhost:3000',
-    'https://agentprobe.dev',
-    'https://www.agentprobe.dev',
-    'https://agentprobe-community-dashboard.pages.dev',
-    'https://staging-agentprobe-community-dashboard.pages.dev'
-  ],
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
-}));
+// CORS middleware - dynamically configure origins from environment
+app.use('*', async (c, next) => {
+  const corsOrigins = c.env.CORS_ORIGINS || 'http://localhost:3000,https://agentprobe.dev,https://www.agentprobe.dev';
+  const allowedOrigins = corsOrigins.split(',').map(origin => origin.trim());
+  
+  return cors({
+    origin: allowedOrigins,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  })(c, next);
+});
 
 // Global error handler
 app.onError((err, c) => {

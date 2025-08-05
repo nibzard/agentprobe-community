@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "mcp__playwright__browser_navigate",
+      "Bash(rm:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(mv:*)",
+      "Bash(NEXT_PUBLIC_API_URL=https://agentprobe-community-production.nikola-balic.workers.dev NEXT_PUBLIC_APP_NAME=\"AgentProbe Community Dashboard\" pnpm run export)",
+      "Bash(ls:*)",
+      "Bash(pnpm run:*)",
+      "WebFetch(domain:llmstxt.org)"
+    ],
+    "deny": []
+  }
+}

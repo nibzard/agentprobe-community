@@ -1,175 +1,274 @@
-# AgentProbe Community API
+# AgentProbe Community
 
-A secure backend service for collecting and sharing CLI test results from the community.
+A comprehensive platform for collecting and visualizing CLI test results from the community, consisting of a secure API backend and an intuitive dashboard frontend.
 
-## Security Features
+## 🏗️ Project Structure
 
-### 🔐 Authentication & Authorization
-- **Bearer Token Authentication**: JWT-based authentication for user sessions
-- **API Key Authentication**: Secure API keys for programmatic access
-- **Multi-layer Authorization**: Role-based permissions with granular API key permissions
-- **Account Security**: Password hashing with bcrypt, account lockout protection
+This is a monorepo containing two main packages:
 
-### 🛡️ API Security
-- **Rate Limiting**: Multiple levels of rate limiting (global, per-endpoint, per-API-key)
-- **Request Validation**: Comprehensive input validation and sanitization
-- **CORS Configuration**: Production-ready CORS settings
-- **Security Headers**: Helmet.js for security headers including CSP
-- **API Versioning**: Future-proof API versioning strategy
-
-### 🔍 Input Validation & Sanitization
-- **Schema Validation**: Joi schemas for complex data validation
-- **XSS Prevention**: Input sanitization to prevent XSS attacks
-- **SQL Injection Protection**: Parameterized queries and input filtering
-- **Content Security Policy**: CSP validation for user-submitted content
-- **File Size Limits**: Protection against oversized payloads
-
-### 📊 Monitoring & Auditing
-- **Comprehensive Logging**: Structured logging with Winston
-- **Security Event Tracking**: Dedicated security audit logs
-- **Performance Monitoring**: Request timing and performance metrics
-- **Error Tracking**: Detailed error logging with context
-
-## API Endpoints
-
-### Authentication (`/api/v1/auth`)
-- `POST /register` - User registration
-- `POST /login` - User authentication
-- `POST /logout` - User logout
-- `GET /me` - Get user profile
-- `PUT /me` - Update user profile
-- `POST /verify-email` - Email verification
-- `POST /forgot-password` - Password reset request
-- `POST /reset-password` - Password reset
-- `POST /change-password` - Change password
-
-### API Keys (`/api/v1/api-keys`)
-- `POST /` - Create new API key
-- `GET /` - List user's API keys
-- `GET /:id` - Get API key details
-- `PUT /:id` - Update API key
-- `DELETE /:id` - Revoke API key
-- `POST /:id/regenerate` - Regenerate API key
-- `GET /stats` - Usage statistics
-- `POST /cleanup` - Cleanup expired keys
-
-### Test Results (`/api/v1/results`)
-- `POST /` - Submit test result
-- `POST /batch` - Batch submit results
-- `GET /` - List test results (with filtering)
-- `GET /search` - Search test results
-- `GET /stats` - Get statistics
-- `GET /trending` - Get trending tests
-- `GET /:id` - Get specific result
-- `PUT /:id` - Update result
-- `DELETE /:id` - Delete result
-- `GET /user/history` - User's test history
-
-## Security Configuration
-
-### Environment Variables
-
-```bash
-# Security
-JWT_SECRET=your-super-secret-jwt-key
-BCRYPT_SALT_ROUNDS=12
-API_KEY_LENGTH=32
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# CORS
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-PRODUCTION_DOMAINS=https://agentprobe.com,https://www.agentprobe.com
+```
+agentprobe-community/
+├── packages/
+│   ├── api/          # Backend API (Cloudflare Workers + Hono)
+│   └── dashboard/    # Frontend Dashboard (Next.js)
+├── .github/
+│   └── workflows/    # Separate CI/CD for API and Dashboard
+└── docs/            # Shared documentation
 ```
 
-### Rate Limiting Strategy
+## 🚀 Current Deployments
 
-1. **Global Rate Limiting**: 100 requests per 15 minutes per IP
-2. **Authentication Endpoints**: 5 requests per 15 minutes per IP
-3. **API Key Operations**: 10 requests per 15 minutes per user
-4. **Test Submissions**: 100 submissions per minute per API key
-5. **Per-API-Key Limits**: 1000 requests per hour per API key
+### API (Backend)
+- **Production**: https://agentprobe-community-production.nikola-balic.workers.dev
+- **Staging**: https://agentprobe-community-staging.nikola-balic.workers.dev
+- **Local Development**: http://localhost:8787
 
-### API Key Permissions
+### Dashboard (Frontend)
+- **Production**: https://dashboard.agentprobe.dev
+- **Staging**: https://staging-dashboard.agentprobe.dev
+- **Local Development**: http://localhost:3000
 
-- `read`: Read access to test results and public data
-- `write`: Submit new test results and update own data
-- `delete`: Delete own test results and data
-- `admin`: Full administrative access (admin users only)
+## 🛠️ Technology Stack
 
-### Data Validation
+### API Backend (`packages/api/`)
+- **Runtime**: Cloudflare Workers
+- **Framework**: Hono.js
+- **Database**: Cloudflare D1 (SQLite)
+- **Language**: TypeScript
+- **ORM**: Drizzle ORM
+- **Validation**: Zod
+- **Authentication**: API Key based
 
-- **Test Results**: Comprehensive validation of test data structure
-- **User Input**: Sanitization and validation of all user inputs
-- **File Uploads**: Size limits and content validation
-- **Search Queries**: Input sanitization for search functionality
+### Dashboard Frontend (`packages/dashboard/`)
+- **Framework**: Next.js 15 (App Router) with Turbopack
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Data Fetching**: React Query
+- **Charts**: Recharts
+- **Deployment**: Cloudflare Pages
 
-## Getting Started
+## 🚦 Getting Started
 
-1. **Install Dependencies**
+### Prerequisites
+- Node.js 18+
+- pnpm (recommended package manager)
+- Cloudflare account (for deployment)
+
+### Quick Start
+
+1. **Clone and Install**
    ```bash
-   npm install
+   git clone <repository-url>
+   cd agentprobe-community
+   pnpm install
    ```
 
-2. **Set Environment Variables**
+2. **Development - Both Services**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   # Start both API and dashboard in development mode with Turbopack
+   pnpm run dev
+   
+   # Run in background with logs
+   pnpm run dev > dev.log 2>&1 &
+   
+   # Or start individually:
+   pnpm run dev:api      # API only (localhost:8787)
+   pnpm run dev:dashboard # Dashboard only (localhost:3000) - uses Turbopack
    ```
 
-3. **Start the Server**
+3. **Building**
    ```bash
-   npm run dev
+   # Build both packages
+   pnpm run build
+   
+   # Or build individually:
+   pnpm run build:api
+   pnpm run build:dashboard
    ```
 
-## Security Best Practices Implemented
+## 📦 Package Details
 
-### Defense in Depth
-- Multiple layers of security controls
-- Input validation at multiple levels
-- Authentication and authorization checks
-- Rate limiting and DDoS protection
+### API Package (`packages/api/`)
 
-### Least Privilege
-- Granular API key permissions
-- Role-based access control
-- Minimum necessary data exposure
-- Scoped authentication tokens
+A secure backend service for collecting and sharing CLI test results, featuring:
 
-### Zero Trust
-- All inputs are validated and sanitized
-- Authentication required for sensitive operations
-- Audit logging for all actions
-- Comprehensive error handling
+- **Security**: API key authentication, rate limiting, security event logging
+- **Database**: Comprehensive schema for results, statistics, and user management
+- **API**: RESTful endpoints for data submission, querying, and export
+- **Monitoring**: Health checks, analytics, and error tracking
 
-### Secure by Default
-- Secure default configurations
-- Automatic security headers
-- Protected sensitive endpoints
-- Encrypted data transmission
+**Key Endpoints:**
+- `POST /api/v1/results` - Submit test results
+- `GET /api/v1/stats/tool/{tool}` - Get tool statistics
+- `GET /api/v1/leaderboard` - Get tool leaderboard
+- `POST /api/v1/export` - Export data (CSV/JSON)
 
-## Monitoring and Alerting
+For detailed API documentation, see [`packages/api/README.md`](packages/api/README.md)
 
-The API includes comprehensive logging and monitoring:
+### Dashboard Package (`packages/dashboard/`)
 
-- **Access Logs**: All API requests with timing and authentication info
-- **Security Logs**: Failed authentication attempts and security violations
-- **Audit Logs**: All data modification operations
-- **Performance Logs**: Slow queries and performance metrics
-- **Error Logs**: Application errors with full context
+A modern web interface for visualizing community test results, featuring:
 
-## Contributing
+- **Responsive Design**: Works on desktop and mobile devices
+- **Interactive Charts**: Success rates, performance trends, tool comparisons
+- **Data Export**: Export charts and data in various formats
+- **Real-time Updates**: Live data from the API backend
 
-Please ensure all contributions maintain the security standards established in this project:
+**Key Features:**
+- Tool leaderboard with success rates
+- Scenario-specific performance analytics
+- Historical trend analysis
+- Exportable reports and visualizations
 
-1. Follow secure coding practices
-2. Add input validation for new endpoints
-3. Include security tests
-4. Update documentation for security changes
-5. Conduct security review before merging
+For detailed dashboard documentation, see [`packages/dashboard/README.md`](packages/dashboard/README.md)
 
-## License
+## 🏗️ Deployment
+
+Both packages have separate deployment pipelines:
+
+### API Deployment
+- **Platform**: Cloudflare Workers
+- **Trigger**: Push to `main` (production) or `develop` (staging)
+- **Workflow**: `.github/workflows/deploy.yml`
+
+```bash
+# Manual deployment
+cd packages/api
+pnpm run deploy:prod     # Production
+pnpm run deploy:staging  # Staging
+```
+
+### Dashboard Deployment
+- **Platform**: Cloudflare Pages
+- **Trigger**: Push to `main` (production) or `develop` (staging)
+- **Workflow**: `.github/workflows/deploy-dashboard.yml`
+
+```bash
+# Manual deployment
+cd packages/dashboard
+pnpm run export  # Build static export
+# Then deploy via Cloudflare Pages dashboard
+```
+
+For detailed deployment instructions, see:
+- [API Deployment Guide](packages/api/DEPLOYMENT.md)
+- [Dashboard Deployment Guide](packages/dashboard/DEPLOYMENT.md)
+
+## 🔧 Development Commands
+
+### Workspace Commands (from root)
+```bash
+# Install dependencies for all packages
+pnpm install
+
+# Run development servers for both packages
+pnpm run dev
+
+# Build both packages
+pnpm run build
+
+# Run tests
+pnpm run test
+
+# Type checking across all packages
+pnpm run type-check
+```
+
+### Package-Specific Commands
+```bash
+# Work on API only
+pnpm --filter @agentprobe/api dev
+pnpm --filter @agentprobe/api build
+pnpm --filter @agentprobe/api test
+
+# Work on Dashboard only
+pnpm --filter @agentprobe/dashboard dev
+pnpm --filter @agentprobe/dashboard build
+pnpm --filter @agentprobe/dashboard lint
+```
+
+## 🧪 API Usage Example
+
+```bash
+# Submit a test result to the API
+curl -X POST https://agentprobe-community-production.nikola-balic.workers.dev/api/v1/results \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "run_id": "123e4567-e89b-12d3-a456-426614174000",
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tool": "claude-cli",
+    "scenario": "file-operations",
+    "client_info": {
+      "agentprobe_version": "1.0.0",
+      "os": "macOS",
+      "python_version": "3.9.0"
+    },
+    "execution": {
+      "duration": 45.2,
+      "total_turns": 8,
+      "success": true
+    }
+  }'
+
+# View results in the dashboard
+open https://dashboard.agentprobe.dev/
+```
+
+## 🛡️ Security
+
+- **API Security**: Authentication, rate limiting, input validation, audit logging
+- **Frontend Security**: Secure API communication, XSS prevention, secure export
+- **Infrastructure**: Cloudflare's security features, HTTPS by default
+- **Data Protection**: Privacy-focused design, secure data handling
+
+## 📊 Monitoring
+
+### Health Checks
+```bash
+# API Health
+curl https://agentprobe-community-production.nikola-balic.workers.dev/health
+
+# Dashboard Health
+curl https://dashboard.agentprobe.dev/
+```
+
+### Metrics
+- API performance and error rates (Cloudflare Analytics)
+- Dashboard usage analytics (Cloudflare Web Analytics)
+- Database performance (D1 metrics)
+- Security events and rate limiting
+
+## 🤝 Contributing
+
+1. **Setup Development Environment**
+   ```bash
+   pnpm install
+   pnpm run dev
+   ```
+
+2. **Make Changes**
+   - API changes: Work in `packages/api/`
+   - Dashboard changes: Work in `packages/dashboard/`
+   - Shared changes: Update root documentation
+
+3. **Testing**
+   ```bash
+   pnpm run test
+   pnpm run type-check
+   ```
+
+4. **Submit PR**
+   - Separate workflows will test API and dashboard changes
+   - Both must pass before merging
+
+## 📝 Documentation
+
+- [API Documentation](packages/api/README.md)
+- [Dashboard Documentation](packages/dashboard/README.md)
+- [API Deployment Guide](packages/api/DEPLOYMENT.md)
+- [Dashboard Deployment Guide](packages/dashboard/DEPLOYMENT.md)
+
+## 📝 License
 
 MIT License - see LICENSE file for details.

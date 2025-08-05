@@ -15,10 +15,10 @@ CORS_ORIGINS = "http://localhost:3000,https://agentprobe.dev"
 [[d1_databases]]
 binding = "DB"
 database_name = "agentprobe-community-dev"
-database_id = "placeholder"  # Will be replaced after creating database
+database_id = "25f7c244-7c51-49e4-8ba6-b7d4fdd66a7c"
 migrations_dir = "./migrations"
 
-# Analytics Engine for metrics (optional)
+# Analytics Engine for metrics
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
 dataset = "agentprobe_metrics"
@@ -30,7 +30,7 @@ vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", CORS_ORIGINS = "https:/
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "agentprobe-community-prod"
-database_id = "placeholder"  # Will be replaced after creating production database
+database_id = "2e6925cb-2738-452a-a12e-0def0fb6a969"
 migrations_dir = "./migrations"
 
 [[env.production.analytics_engine_datasets]]
@@ -44,7 +44,7 @@ vars = { ENVIRONMENT = "staging", LOG_LEVEL = "info", CORS_ORIGINS = "https://st
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "agentprobe-community-staging"
-database_id = "placeholder"  # Will be replaced after creating staging database
+database_id = "1feed6aa-0e8b-4dec-9906-626e57f87d6b"
 migrations_dir = "./migrations"
 
 [[env.staging.analytics_engine_datasets]]

@@ -1,0 +1,13 @@
+AgentProbe Community Admin API Key
+Generated: 2025-08-05T15:23:14.806Z
+
+Key ID: ap_fc8781608212ffb175bb8cff81fd8956
+Full API Key: ap_fc8781608212ffb175bb8cff81fd8956_e2b219e552d6e79dbe39d1cdb2c35d358153aec1ce2ef90ebb367bf0d2575fa2
+Hashed Key: 45464f1ffacb3d64462a5f0341f4a2b7:a9e6865326f5bc1b70853ee9553d26f5ecd46b663a3541733e3f7f38221eaef0
+
+SQL Command:
+INSERT INTO api_keys (key_id, hashed_key, name, permissions, is_active, rate_limit, created_by)
+VALUES ('ap_fc8781608212ffb175bb8cff81fd8956', '45464f1ffacb3d64462a5f0341f4a2b7:a9e6865326f5bc1b70853ee9553d26f5ecd46b663a3541733e3f7f38221eaef0', 'Bootstrap Admin Key', '["admin"]', 1, 10000, 'bootstrap');
+
+⚠️  SECURITY WARNING:
+This file contains sensitive information. Store it securely and delete it after use.

@@ -110,7 +110,13 @@ app.use('*', async (c, next) => {
 
 // CORS middleware
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'https://agentprobe.dev'], // Add your production domains
+  origin: [
+    'http://localhost:3000',
+    'https://agentprobe.dev',
+    'https://www.agentprobe.dev',
+    'https://agentprobe-community-dashboard.pages.dev',
+    'https://staging-agentprobe-community-dashboard.pages.dev'
+  ],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
@@ -462,7 +468,7 @@ app.get('/health', async (c) => {
       },
     };
     
-    return c.json(healthResponse, status === 'healthy' ? 200 : 503);
+    return c.json(createSuccessResponse(healthResponse, 'Health check completed'), status === 'healthy' ? 200 : 503);
   } catch (error) {
     return c.json(createErrorResponse(
       'Health check failed',
@@ -852,8 +858,8 @@ app.get('/api/v1/results', readOnly(), zValidator('query', queryParamsSchema), a
   }
 });
 
-// Aggregate statistics endpoint (requires read permission)
-app.get('/api/v1/stats/aggregate', readOnly(), zValidator('query', aggregateStatsSchema), async (c) => {
+// Aggregate statistics endpoint (public access for dashboard)
+app.get('/api/v1/stats/aggregate', optionalAuthMiddleware(), zValidator('query', aggregateStatsSchema), async (c) => {
   try {
     const db = createDb(c.env.DB);
     const params = c.req.valid('query');
@@ -1069,8 +1075,8 @@ app.post('/api/v1/compare/tools', readOnly(), zValidator('json', toolComparisonS
   }
 });
 
-// Scenario difficulty ranking endpoint (requires read permission)
-app.get('/api/v1/scenarios/difficulty', readOnly(), async (c) => {
+// Scenario difficulty ranking endpoint (public access for dashboard)
+app.get('/api/v1/scenarios/difficulty', optionalAuthMiddleware(), async (c) => {
   try {
     const db = createDb(c.env.DB);
     
@@ -1382,8 +1388,8 @@ app.get('/api/v1/stats/tool/:tool', readOnly(), async (c) => {
   }
 });
 
-// Leaderboard (requires read permission)
-app.get('/api/v1/leaderboard', readOnly(), async (c) => {
+// Leaderboard (public access for dashboard)
+app.get('/api/v1/leaderboard', optionalAuthMiddleware(), async (c) => {
   try {
     const db = createDb(c.env.DB);
     

@@ -6,7 +6,7 @@ This guide provides step-by-step instructions for setting up D1 databases for Ag
 
 - Cloudflare account with Workers plan
 - Wrangler CLI installed and authenticated
-- Project dependencies installed (`npm install`)
+- Project dependencies installed (`pnpm install`)
 
 ## Manual Database Setup Process
 
@@ -63,13 +63,13 @@ Apply the database schema to each environment:
 
 ```bash
 # Development (local D1 instance)
-npm run db:migrate:dev
+pnpm run db:migrate:dev
 
 # Staging (remote D1 database)
-npm run db:migrate:staging
+pnpm run db:migrate:staging
 
 # Production (remote D1 database)
-npm run db:migrate:prod
+pnpm run db:migrate:prod
 ```
 
 ## Automated Setup Script
@@ -110,17 +110,17 @@ The migration creates these tables:
 
 ### Development
 - **Database**: `agentprobe-community-dev`
-- **Migration Command**: `npm run db:migrate:dev`
+- **Migration Command**: `pnpm run db:migrate:dev`
 - **Local D1**: Uses `.wrangler/state/v3/d1/` for local development
 
 ### Staging
 - **Database**: `agentprobe-community-staging`
-- **Migration Command**: `npm run db:migrate:staging`
+- **Migration Command**: `pnpm run db:migrate:staging`
 - **Remote D1**: Uses Cloudflare's edge network
 
 ### Production
 - **Database**: `agentprobe-community-prod`
-- **Migration Command**: `npm run db:migrate:prod`
+- **Migration Command**: `pnpm run db:migrate:prod`
 - **Remote D1**: Uses Cloudflare's edge network
 
 ## Verification

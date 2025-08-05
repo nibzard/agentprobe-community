@@ -1,48 +1,33 @@
 {
   "name": "agentprobe-community",
   "version": "1.0.0",
-  "description": "Community results sharing backend for AgentProbe",
-  "main": "src/index.ts",
+  "description": "AgentProbe Community - API and Dashboard monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "deploy:staging": "wrangler deploy --env staging",
-    "deploy:prod": "wrangler deploy --env production",
-    "build": "tsc",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
-    "db:create": "wrangler d1 create agentprobe-community",
-    "db:migrate:dev": "wrangler d1 migrations apply agentprobe-community-dev --local",
-    "db:migrate:staging": "wrangler d1 migrations apply agentprobe-community-staging --remote",
-    "db:migrate:prod": "wrangler d1 migrations apply agentprobe-community-prod --remote",
-    "test": "vitest",
-    "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@cloudflare/workers-types": "^4.20241024.0",
-    "@hono/zod-validator": "^0.2.0",
-    "drizzle-orm": "^0.33.0",
-    "hono": "^4.0.0",
-    "zod": "^3.22.0"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.0",
-    "@types/node": "^20.0.0",
-    "better-sqlite3": "^9.0.0",
-    "drizzle-kit": "^0.25.0",
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0",
-    "wrangler": "^4.27.0"
+    "dev:api": "pnpm --filter @agentprobe/api dev",
+    "dev:dashboard": "pnpm --filter @agentprobe/dashboard dev",
+    "dev": "pnpm --parallel --filter @agentprobe/api --filter @agentprobe/dashboard dev",
+    "build:api": "pnpm --filter @agentprobe/api build",
+    "build:dashboard": "pnpm --filter @agentprobe/dashboard build",
+    "build": "pnpm run build:api && pnpm run build:dashboard",
+    "deploy:api": "pnpm --filter @agentprobe/api deploy",
+    "deploy:dashboard": "pnpm --filter @agentprobe/dashboard export",
+    "test": "pnpm --filter @agentprobe/api test",
+    "type-check": "pnpm run --parallel type-check"
   },
   "keywords": [
     "agentprobe",
     "cli-testing",
     "community",
-    "hono",
-    "cloudflare-workers"
+    "monorepo"
   ],
   "author": "AgentProbe Community",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
 }

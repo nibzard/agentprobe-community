@@ -324,7 +324,7 @@ export AGENTPROBE_DEV_MODE=true
 The authentication system includes comprehensive test coverage. Run tests with:
 
 ```bash
-npm test
+pnpm test
 ```
 
 ### Debugging

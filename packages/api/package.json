@@ -1,0 +1,48 @@
+{
+  "name": "@agentprobe/api",
+  "version": "1.0.0",
+  "description": "Community results sharing backend for AgentProbe",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:prod": "wrangler deploy --env production",
+    "build": "tsc",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:create": "wrangler d1 create agentprobe-community",
+    "db:migrate:dev": "wrangler d1 migrations apply agentprobe-community-dev --local",
+    "db:migrate:staging": "wrangler d1 migrations apply agentprobe-community-staging --remote",
+    "db:migrate:prod": "wrangler d1 migrations apply agentprobe-community-prod --remote",
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241024.0",
+    "@hono/zod-validator": "^0.2.0",
+    "drizzle-orm": "^0.33.0",
+    "hono": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.0.0",
+    "better-sqlite3": "^9.0.0",
+    "drizzle-kit": "^0.25.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0",
+    "wrangler": "^4.27.0"
+  },
+  "keywords": [
+    "agentprobe",
+    "cli-testing",
+    "community",
+    "hono",
+    "cloudflare-workers"
+  ],
+  "author": "AgentProbe Community",
+  "license": "MIT"
+}

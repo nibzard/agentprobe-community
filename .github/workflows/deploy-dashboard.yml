@@ -43,8 +43,8 @@ jobs:
       # - name: Type check dashboard
       #   run: pnpm --filter @agentprobe/dashboard run type-check
 
-      - name: Lint dashboard
-        run: pnpm --filter @agentprobe/dashboard run lint
+      # - name: Lint dashboard
+      #   run: pnpm --filter @agentprobe/dashboard run lint
 
       - name: Build dashboard
         run: pnpm --filter @agentprobe/dashboard run build

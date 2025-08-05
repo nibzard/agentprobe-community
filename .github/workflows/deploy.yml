@@ -86,12 +86,16 @@ jobs:
           workingDirectory: packages/api
 
       - name: Run database migrations (Staging)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply agentprobe-community-staging --remote --env staging
-          workingDirectory: packages/api
+        run: |
+          if [ -d "migrations" ] && [ "$(ls -A migrations)" ]; then
+            npx wrangler d1 migrations apply agentprobe-community-staging --remote --env staging
+          else
+            echo "No migrations found, skipping migration step"
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: packages/api
 
   deploy-production:
     name: Deploy to Production
@@ -129,12 +133,16 @@ jobs:
           workingDirectory: packages/api
 
       - name: Run database migrations (Production)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply agentprobe-community-prod --remote --env production
-          workingDirectory: packages/api
+        run: |
+          if [ -d "migrations" ] && [ "$(ls -A migrations)" ]; then
+            npx wrangler d1 migrations apply agentprobe-community-prod --remote --env production
+          else
+            echo "No migrations found, skipping migration step"
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: packages/api
 
       - name: Health check
         run: |

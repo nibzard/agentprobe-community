@@ -11,6 +11,7 @@ import {
 } from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
 class ApiError extends Error {
   constructor(
@@ -36,13 +37,20 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> || {}),
+    };
+
+    // Add API key if available
+    if (API_KEY) {
+      headers['X-API-Key'] = API_KEY;
+    }
+    
     try {
       const response = await fetch(url, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
       });
 
       if (!response.ok) {

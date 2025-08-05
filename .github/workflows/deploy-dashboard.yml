@@ -51,6 +51,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://agentprobe-community-staging.nikola-balic.workers.dev
           NEXT_PUBLIC_APP_NAME: AgentProbe Community Dashboard
+          NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
 
   deploy-staging:
     name: Deploy Dashboard to Staging
@@ -81,6 +82,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://agentprobe-community-staging.nikola-balic.workers.dev
           NEXT_PUBLIC_APP_NAME: AgentProbe Community Dashboard (Staging)
+          NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
 
       - name: Deploy to Cloudflare Workers (Staging)
         run: pnpm wrangler deploy --env staging
@@ -118,6 +120,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://agentprobe-community-production.nikola-balic.workers.dev
           NEXT_PUBLIC_APP_NAME: AgentProbe Community Dashboard
+          NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
 
       - name: Deploy to Cloudflare Workers (Production)
         run: pnpm wrangler deploy --env production

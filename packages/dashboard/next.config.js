@@ -8,7 +8,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Static export configuration for Cloudflare Pages
+  // Static export configuration for Cloudflare
   // API calls will use the full URL directly
 };
 

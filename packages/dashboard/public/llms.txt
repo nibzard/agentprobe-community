@@ -1,0 +1,125 @@
+# AgentProbe Community
+
+> A comprehensive platform for collecting and visualizing CLI test results from the community, consisting of a secure API backend and an intuitive dashboard frontend.
+
+## Live Services
+
+- [Production API](https://agentprobe-community-production.nikola-balic.workers.dev): Backend API with 19+ endpoints for data submission and retrieval
+- [Production Dashboard](https://dashboard.agentprobe.dev): Interactive web interface for visualizing community test results
+- [API Health Check](https://agentprobe-community-production.nikola-balic.workers.dev/health): Live system status and statistics
+
+## API Documentation
+
+- [Complete API Reference](https://dashboard.agentprobe.dev/docs/api/endpoints/): All 19 endpoints with authentication and examples
+- [Authentication Guide](https://dashboard.agentprobe.dev/docs/api/authentication/): API key setup, permissions, and security
+- [Database Schema](https://dashboard.agentprobe.dev/docs/api/database/): Complete data model and relationships
+- [Deployment Guide](https://dashboard.agentprobe.dev/docs/api/deployment/): Production deployment and configuration
+
+### Key API Endpoints
+- `POST /api/v1/results`: Submit test results
+- `GET /api/v1/leaderboard`: Tool performance rankings  
+- `GET /api/v1/stats/tool/{tool}`: Tool-specific statistics
+- `POST /api/v1/export`: Data export in CSV/JSON formats
+
+## Dashboard Features
+
+- [Live Dashboard](https://dashboard.agentprobe.dev): Real-time community statistics and insights
+- [Tool Leaderboard](https://dashboard.agentprobe.dev/leaderboard/): Success rates and performance rankings
+- [Scenario Analysis](https://dashboard.agentprobe.dev/scenarios/): Difficulty rankings and success patterns
+- [Component Documentation](https://dashboard.agentprobe.dev/docs/dashboard/components/): UI component library and usage
+
+## User Resources
+
+- [Getting Started Guide](https://dashboard.agentprobe.dev/docs/user-guides/getting-started/): Quick setup and API integration
+- [API Usage Examples](https://dashboard.agentprobe.dev/docs/user-guides/api-usage/): Code examples and integration patterns
+- [Dashboard User Guide](https://dashboard.agentprobe.dev/docs/user-guides/dashboard-guide/): Feature walkthrough and tips
+
+## Developer Resources
+
+- [Contributing Guidelines](https://dashboard.agentprobe.dev/docs/developer/contributing/): Development setup and contribution process
+- [System Architecture](https://dashboard.agentprobe.dev/docs/developer/architecture/): Technical design and technology stack
+- [Troubleshooting Guide](https://dashboard.agentprobe.dev/docs/developer/troubleshooting/): Common issues and solutions
+
+## Technology Stack
+
+### Backend API
+- **Runtime**: Cloudflare Workers with global edge deployment
+- **Framework**: Hono.js for high-performance HTTP handling
+- **Database**: Cloudflare D1 (SQLite) with Drizzle ORM
+- **Authentication**: API key-based with granular permissions
+- **Security**: Rate limiting, input validation, audit logging
+
+### Frontend Dashboard  
+- **Framework**: Next.js 15 with App Router and Turbopack
+- **Styling**: Tailwind CSS with custom design system
+- **Charts**: Recharts for interactive data visualizations
+- **Data**: React Query for state management and caching
+- **Deployment**: Cloudflare Pages with static export
+
+## Project Structure
+
+```
+agentprobe-community/
+├── packages/
+│   ├── api/          # Backend API (Cloudflare Workers + Hono)
+│   └── dashboard/    # Frontend Dashboard (Next.js)
+├── docs/            # Centralized documentation
+└── .github/         # CI/CD workflows for deployment
+```
+
+## Data & Analytics
+
+The platform collects and analyzes:
+- **Test Results**: Success rates, execution times, error patterns
+- **Tool Performance**: Comparative analysis across CLI tools
+- **Scenario Difficulty**: Ranking based on success rates and friction points
+- **Community Metrics**: Usage patterns and adoption trends
+
+## API Usage Example
+
+```bash
+# Submit a test result
+curl -X POST https://agentprobe-community-production.nikola-balic.workers.dev/api/v1/results \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "run_id": "123e4567-e89b-12d3-a456-426614174000",
+    "timestamp": "2025-01-01T00:00:00Z",
+    "tool": "claude-cli",
+    "scenario": "file-operations",
+    "execution": {
+      "duration": 45.2,
+      "total_turns": 8,
+      "success": true
+    }
+  }'
+```
+
+## Security & Compliance
+
+- **Authentication**: API key-based with role-based permissions
+- **Rate Limiting**: Multi-layered protection against abuse
+- **Data Privacy**: Anonymous data collection, no personal information
+- **Security Monitoring**: Comprehensive audit logging and threat detection
+- **Infrastructure**: Cloudflare's enterprise security features
+
+## Api Documentation
+
+- [AgentProbe Community Authentication Setup](https://dashboard.agentprobe.dev/docs/api/authentication/): This document provides a comprehensive guide for setting up and managing the authentication system in AgentProbe Community.
+- [Database Setup Guide](https://dashboard.agentprobe.dev/docs/api/database/): This guide provides step-by-step instructions for setting up D1 databases for AgentProbe Community.
+- [AgentProbe Community - Deployment Guide](https://dashboard.agentprobe.dev/docs/api/deployment/): This guide covers deploying the AgentProbe Community backend to Cloudflare Workers.
+- [API Endpoints Reference](https://dashboard.agentprobe.dev/docs/api/endpoints/): *Auto-generated from source code analysis*
+
+## Dashboard Documentation
+
+- [Dashboard Components](https://dashboard.agentprobe.dev/docs/dashboard/components/): *Auto-generated from component analysis*
+- [AgentProbe Community Dashboard - Deployment Guide](https://dashboard.agentprobe.dev/docs/dashboard/deployment/): ## 🚀 Cloudflare Pages Deployment
+- [Dashboard Pages](https://dashboard.agentprobe.dev/docs/dashboard/pages/): This document describes the page structure and routing of the AgentProbe Community Dashboard.
+
+## User-guides Documentation
+
+- [API Usage Guide](https://dashboard.agentprobe.dev/docs/user-guides/api-usage/): Complete guide to integrating with the AgentProbe Community API, including authentication, data submission, querying, and best practices.
+- [Dashboard User Guide](https://dashboard.agentprobe.dev/docs/user-guides/dashboard-guide/): Complete guide to using the AgentProbe Community Dashboard for analyzing CLI tool testing data and community insights.
+- [Getting Started with AgentProbe Community](https://dashboard.agentprobe.dev/docs/user-guides/getting-started/): Welcome to AgentProbe Community! This guide will help you get started with using both the API and dashboard to submit test results and analyze community data.
+
+*Documentation automatically generated on 2025-08-05T15:48:41.169Z*

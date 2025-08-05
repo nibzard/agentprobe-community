@@ -5,11 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "node ../../docs/scripts/generate-llms-txt.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "export": "next build"
+    "preexport": "node ../../docs/scripts/generate-llms-txt.js",
+    "export": "next build",
+    "docs:generate": "node ../../docs/scripts/generate-llms-txt.js",
+    "docs:api": "node ../../docs/scripts/extract-api-endpoints.js"
   },
   "dependencies": {
     "@types/node": "^24.2.0",

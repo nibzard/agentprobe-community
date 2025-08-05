@@ -147,7 +147,7 @@ jobs:
       - name: Health check
         run: |
           sleep 30
-          curl -f https://agentprobe-community.your-subdomain.workers.dev/ || exit 1
+          curl -f https://agentprobe-community-production.nikola-balic.workers.dev/ || exit 1
 
   security-scan:
     name: Security Scan

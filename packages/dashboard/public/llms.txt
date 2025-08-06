@@ -126,4 +126,4 @@ curl -X POST https://agentprobe-community-production.nikola-balic.workers.dev/ap
 - [Dashboard User Guide](https://dashboard.agentprobe.dev/docs/user-guides/dashboard-guide/): Complete guide to using the AgentProbe Community Dashboard for analyzing CLI tool testing data and community insights.
 - [Getting Started with AgentProbe Community](https://dashboard.agentprobe.dev/docs/user-guides/getting-started/): Welcome to AgentProbe Community! This guide will help you get started with using both the API and dashboard to submit test results and analyze community data.
 
-*Documentation automatically generated on 2025-08-06T12:22:39.499Z*
+*Documentation automatically generated on 2025-08-06T13:21:13.923Z*

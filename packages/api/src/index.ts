@@ -1146,14 +1146,33 @@ app.post('/api/v1/compare/tools', readOnly(), zValidator('json', toolComparisonS
       const successRate = totalRuns > 0 ? successfulRuns / totalRuns : 0;
       const avgDuration = stats.reduce((sum, s) => sum + (s.avgDuration * s.totalRuns), 0) / totalRuns;
       
-      // Get scenarios
+      // Get raw duration data for percentile calculations
+      const rawResults = await db.select({
+        duration: results.duration,
+        scenario: results.scenario
+      })
+        .from(results)
+        .where(eq(results.tool, tool));
+      
+      const allDurations = rawResults.map(r => r.duration);
+      const overallDurationStats = calculateDurationStats(allDurations);
+      
+      // Get scenarios with duration percentiles
       const scenarios: Record<string, any> = {};
       for (const stat of stats) {
         if (stat.scenario) {
+          const scenarioDurations = rawResults
+            .filter(r => r.scenario === stat.scenario)
+            .map(r => r.duration);
+          const scenarioStats = calculateDurationStats(scenarioDurations);
+          
           scenarios[stat.scenario] = {
             total_runs: stat.totalRuns,
             success_rate: stat.successRate,
             avg_duration: stat.avgDuration,
+            median_duration: scenarioStats.median,
+            p95_duration: scenarioStats.p95,
+            max_duration: scenarioStats.max,
           };
         }
       }
@@ -1170,6 +1189,9 @@ app.post('/api/v1/compare/tools', readOnly(), zValidator('json', toolComparisonS
         total_runs: totalRuns,
         success_rate: successRate,
         avg_duration: avgDuration || 0,
+        median_duration: overallDurationStats.median,
+        p95_duration: overallDurationStats.p95,
+        max_duration: overallDurationStats.max,
         common_friction_points: frictionPoints.map(fp => fp.frictionPoint),
         scenarios,
       };

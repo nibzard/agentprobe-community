@@ -8,6 +8,7 @@ import {
   ScenarioDifficultyResponse,
   AggregateStatsRequest,
   ToolComparisonRequest,
+  QueryParams,
 } from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
@@ -106,6 +107,19 @@ class ApiClient {
   // Leaderboard
   async getLeaderboard(): Promise<LeaderboardEntry[]> {
     return this.request<LeaderboardEntry[]>('/api/v1/leaderboard');
+  }
+
+  // Query results
+  async queryResults(params: QueryParams = {}): Promise<any[]> {
+    const searchParams = new URLSearchParams();
+    
+    if (params.tool) searchParams.set('tool', params.tool);
+    if (params.scenario) searchParams.set('scenario', params.scenario);
+    if (params.success !== undefined) searchParams.set('success', params.success.toString());
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset) searchParams.set('offset', params.offset.toString());
+
+    return this.request<any[]>(`/api/v1/results?${searchParams}`);
   }
 
   // Tool statistics

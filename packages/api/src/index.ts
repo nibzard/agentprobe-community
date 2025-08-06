@@ -163,17 +163,26 @@ const resultSubmissionSchema = z.object({
     os: z.string(),
     python_version: z.string(),
   }),
+  tool_version_info: z.object({
+    tool_version: z.string().optional(),
+    version_detection_method: z.string().optional(),
+    version_detection_success: z.boolean().optional(),
+  }).optional(),
   execution: z.object({
     duration: z.number().positive(),
     total_turns: z.number().int().positive(),
     success: z.boolean(),
     error_message: z.string().optional(),
+    cost: z.number().min(0).optional().nullable(),
   }),
   analysis: z.object({
     friction_points: z.array(z.string()),
     help_usage_count: z.number().int().min(0),
     recommendations: z.array(z.string()),
+    agent_summary: z.string().optional(),
+    ax_score: z.string().optional(),
   }),
+  full_output: z.string().optional(), // Complete structured output JSON
   client_id: z.string().optional(),
 });
 
@@ -337,7 +346,7 @@ function calculateDifficultyScore(
 }
 
 async function processSubmission(db: any, submission: ResultSubmission, clientId: string) {
-  // Insert result
+  // Insert result with enhanced fields
   await db.insert(results).values({
     runId: submission.run_id,
     timestamp: submission.timestamp,
@@ -346,13 +355,23 @@ async function processSubmission(db: any, submission: ResultSubmission, clientId
     agentprobeVersion: submission.client_info.agentprobe_version,
     os: submission.client_info.os,
     pythonVersion: submission.client_info.python_version,
+    // Tool version info
+    toolVersion: submission.tool_version_info?.tool_version,
+    versionDetectionMethod: submission.tool_version_info?.version_detection_method,
+    versionDetectionSuccess: submission.tool_version_info?.version_detection_success || false,
+    // Execution data
     duration: submission.execution.duration,
     totalTurns: submission.execution.total_turns,
     success: submission.execution.success,
     errorMessage: submission.execution.error_message,
+    cost: submission.execution.cost || 0.0,
+    // Enhanced analysis data
+    agentSummary: submission.analysis.agent_summary,
+    axScore: submission.analysis.ax_score,
     frictionPoints: JSON.stringify(submission.analysis.friction_points),
     helpUsageCount: submission.analysis.help_usage_count,
     recommendations: JSON.stringify(submission.analysis.recommendations),
+    fullOutput: submission.full_output,
     clientId,
   });
   
@@ -371,6 +390,24 @@ async function processSubmission(db: any, submission: ResultSubmission, clientId
     const newSuccessfulRuns = stats.successfulRuns + (submission.execution.success ? 1 : 0);
     const newSuccessRate = newSuccessfulRuns / newTotalRuns;
     const newAvgDuration = (stats.avgDuration * stats.totalRuns + submission.execution.duration) / newTotalRuns;
+    const currentCost = submission.execution.cost || 0;
+    const newAvgCost = ((stats.avgCost || 0) * stats.totalRuns + currentCost) / newTotalRuns;
+    
+    // Update common versions
+    let commonVersions = [];
+    try {
+      commonVersions = JSON.parse(stats.commonVersions || '[]');
+    } catch (e) {
+      commonVersions = [];
+    }
+    
+    if (submission.tool_version_info?.tool_version && 
+        submission.tool_version_info.version_detection_success &&
+        !commonVersions.includes(submission.tool_version_info.tool_version)) {
+      commonVersions.push(submission.tool_version_info.tool_version);
+      // Keep only the 5 most common versions
+      commonVersions = commonVersions.slice(-5);
+    }
     
     await db.update(toolStats)
       .set({
@@ -378,10 +415,17 @@ async function processSubmission(db: any, submission: ResultSubmission, clientId
         successfulRuns: newSuccessfulRuns,
         successRate: newSuccessRate,
         avgDuration: newAvgDuration,
+        avgCost: newAvgCost,
+        commonVersions: JSON.stringify(commonVersions),
         lastUpdated: new Date().toISOString(),
       })
       .where(eq(toolStats.id, stats.id));
   } else {
+    const commonVersions = submission.tool_version_info?.tool_version && 
+                           submission.tool_version_info.version_detection_success
+                           ? [submission.tool_version_info.tool_version] 
+                           : [];
+    
     await db.insert(toolStats).values({
       tool: submission.tool,
       scenario: submission.scenario,
@@ -389,6 +433,8 @@ async function processSubmission(db: any, submission: ResultSubmission, clientId
       successfulRuns: submission.execution.success ? 1 : 0,
       successRate: submission.execution.success ? 1 : 0,
       avgDuration: submission.execution.duration,
+      avgCost: submission.execution.cost || 0.0,
+      commonVersions: JSON.stringify(commonVersions),
       lastUpdated: new Date().toISOString(),
     });
   }
@@ -826,6 +872,61 @@ app.post('/api/v1/results/batch', writeAccess(), zValidator('json', batchSubmiss
       'Failed to process batch submission',
       error instanceof Error ? error.message : 'Unknown error',
       'BATCH_SUBMISSION_ERROR',
+      c.req.url
+    ), 500);
+  }
+});
+
+// Get individual result (requires read permission)
+app.get('/api/v1/results/:id', readOnly(), async (c) => {
+  try {
+    const db = createDb(c.env.DB);
+    const resultId = c.req.param('id');
+    
+    // Try to find by UUID (run_id) first, then by integer ID
+    let result;
+    if (resultId.includes('-')) {
+      // Looks like a UUID
+      result = await db.select().from(results).where(eq(results.runId, resultId)).limit(1);
+    } else {
+      // Looks like an integer ID
+      const id = parseInt(resultId);
+      if (isNaN(id)) {
+        return c.json(createErrorResponse(
+          'Invalid result ID',
+          'Result ID must be a valid UUID or integer',
+          'INVALID_ID',
+          c.req.url
+        ), 400);
+      }
+      result = await db.select().from(results).where(eq(results.id, id)).limit(1);
+    }
+    
+    if (result.length === 0) {
+      return c.json(createErrorResponse(
+        'Result not found',
+        `No result found with ID ${resultId}`,
+        'RESULT_NOT_FOUND',
+        c.req.url
+      ), 404);
+    }
+    
+    const data = result[0];
+    
+    // Parse JSON fields
+    const enhancedResult = {
+      ...data,
+      frictionPoints: JSON.parse(data.frictionPoints || '[]'),
+      recommendations: JSON.parse(data.recommendations || '[]'),
+    };
+    
+    return c.json(createSuccessResponse(enhancedResult, 'Result retrieved successfully'));
+  } catch (error) {
+    console.error('Error getting result:', error);
+    return c.json(createErrorResponse(
+      'Failed to get result',
+      error instanceof Error ? error.message : 'Unknown error',
+      'RESULT_GET_ERROR',
       c.req.url
     ), 500);
   }
@@ -1376,13 +1477,31 @@ app.get('/api/v1/stats/tool/:tool', readOnly(), async (c) => {
       .orderBy(desc(frictionPointStats.count))
       .limit(5);
     
+    // Get common versions
+    let commonVersions: string[] = [];
+    try {
+      const versionStats = stats.reduce((acc, stat) => {
+        if (stat.commonVersions) {
+          const versions = JSON.parse(stat.commonVersions);
+          versions.forEach((v: string) => {
+            if (!acc.includes(v)) acc.push(v);
+          });
+        }
+        return acc;
+      }, [] as string[]);
+      commonVersions = versionStats.slice(0, 5); // Top 5 versions
+    } catch (e) {
+      commonVersions = [];
+    }
+    
     const response: ToolStatsResponse = {
       tool,
       total_runs: totalRuns,
       success_rate: successRate,
       avg_duration: avgDuration || 0,
-      avg_cost: 0, // Cost data not currently collected in database schema
+      avg_cost: stats.reduce((sum, s) => sum + ((s.avgCost || 0) * s.totalRuns), 0) / totalRuns || 0,
       common_friction_points: frictionPoints.map(fp => fp.frictionPoint),
+      common_versions: commonVersions,
       scenarios,
     };
     

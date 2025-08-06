@@ -1,9 +1,11 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Grade, PerformanceIndicator } from '@/components/ui/grade';
 import { useHealth, useAggregateStats } from '@/hooks/use-api';
 import { formatNumber, formatPercentage } from '@/lib/utils';
-import { Activity, Users, Target, Clock } from 'lucide-react';
+import { calculateGrade } from '@/lib/grades';
+import { Activity, Users, Target, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 export function StatsOverview() {
   const { data: health, isLoading: healthLoading, error: healthError } = useHealth();
@@ -38,6 +40,7 @@ export function StatsOverview() {
       loading: statsLoading,
       error: statsError,
       format: 'percentage',
+      showGrade: true,
     },
     {
       title: 'Scenarios',
@@ -63,15 +66,20 @@ export function StatsOverview() {
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stat.loading ? (
-                  <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                ) : stat.error ? (
-                  <span className="text-muted-foreground">--</span>
-                ) : (
-                  stat.format === 'percentage' 
-                    ? formatPercentage(stat.value)
-                    : formatNumber(stat.value)
+              <div className="flex items-center space-x-2">
+                <div className="text-2xl font-bold">
+                  {stat.loading ? (
+                    <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                  ) : stat.error ? (
+                    <span className="text-muted-foreground">--</span>
+                  ) : (
+                    stat.format === 'percentage' 
+                      ? formatPercentage(stat.value)
+                      : formatNumber(stat.value)
+                  )}
+                </div>
+                {!stat.loading && !stat.error && (stat as any).showGrade && (
+                  <Grade grade={calculateGrade(stat.value)} size="sm" />
                 )}
               </div>
               <p className="text-xs text-muted-foreground">

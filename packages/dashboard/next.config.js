@@ -9,7 +9,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Static export configuration for Cloudflare
-  // API calls will use the full URL directly
+  // Dynamic routes will handle client-side routing
 };
 
 module.exports = nextConfig;

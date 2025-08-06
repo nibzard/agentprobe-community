@@ -13,16 +13,25 @@ export const results = sqliteTable('results', {
   os: text('os').notNull(),
   pythonVersion: text('python_version').notNull(),
   
+  // Tool version info (new)
+  toolVersion: text('tool_version'),
+  versionDetectionMethod: text('version_detection_method'),
+  versionDetectionSuccess: integer('version_detection_success', { mode: 'boolean' }).default(false),
+  
   // Execution data
   duration: real('duration').notNull(),
   totalTurns: integer('total_turns').notNull(),
   success: integer('success', { mode: 'boolean' }).notNull(),
   errorMessage: text('error_message'),
+  cost: real('cost').default(0.0),
   
-  // Analysis data (stored as JSON)
-  frictionPoints: text('friction_points').notNull(),
+  // Enhanced analysis data
+  agentSummary: text('agent_summary'),
+  axScore: text('ax_score'),
+  frictionPoints: text('friction_points').notNull(), // JSON array
   helpUsageCount: integer('help_usage_count').notNull().default(0),
-  recommendations: text('recommendations').notNull(),
+  recommendations: text('recommendations').notNull(), // JSON array
+  fullOutput: text('full_output'), // Complete structured AgentProbe output JSON
   
   // Sanitized trace data (optional, large)
   traceData: blob('trace_data'),
@@ -39,6 +48,8 @@ export const toolStats = sqliteTable('tool_stats', {
   successfulRuns: integer('successful_runs').notNull().default(0),
   successRate: real('success_rate').notNull().default(0),
   avgDuration: real('avg_duration').notNull().default(0),
+  avgCost: real('avg_cost').default(0.0),
+  commonVersions: text('common_versions').default('[]'), // JSON array
   lastUpdated: text('last_updated').notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 

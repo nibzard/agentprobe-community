@@ -78,14 +78,45 @@
 **Production Environment Variables:**
 ```env
 NEXT_PUBLIC_API_URL=https://agentprobe-community-production.your-username.workers.dev
+NEXT_PUBLIC_API_KEY=ap_your_dashboard_key_here  # Optional: for authenticated features
 NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard
 ```
 
 **Staging Environment Variables:**
 ```env
 NEXT_PUBLIC_API_URL=https://agentprobe-community-staging.your-username.workers.dev
+NEXT_PUBLIC_API_KEY=ap_your_staging_dashboard_key_here  # Optional: for authenticated features
 NEXT_PUBLIC_APP_NAME=AgentProbe Community Dashboard (Staging)
 ```
+
+### Dashboard API Key Configuration
+
+For authenticated dashboard features, you may optionally configure an API key:
+
+**When do you need an API key?**
+- The dashboard's public endpoints (leaderboard, stats, scenarios) work without authentication
+- API keys are only needed for authenticated dashboard features or to avoid potential issues with invalid authentication headers
+- If you encounter "Invalid API key" errors, you should either generate a valid key or ensure no API key is being sent
+
+**Generating a Dashboard API Key:**
+```bash
+cd packages/api
+node scripts/create-admin-key.js dashboard-key read
+```
+
+This will generate a key with read permissions suitable for dashboard usage.
+
+**Adding the API Key to Environments:**
+
+1. **GitHub Actions**: Add `NEXT_PUBLIC_API_KEY` to repository secrets
+2. **Cloudflare Pages**: Add `NEXT_PUBLIC_API_KEY` to environment variables in Pages dashboard
+3. **Local Development**: Add to `.env.local` file
+
+**Important Notes:**
+- The `NEXT_PUBLIC_API_KEY` is optional for public dashboard features
+- If set to an invalid value, it will cause authentication errors
+- You can omit this variable entirely if you only need public dashboard features
+- Make sure the API key has `read` permissions at minimum
 
 ### Static Export Configuration
 
@@ -238,6 +269,12 @@ npm run build
 - Verify `NEXT_PUBLIC_API_URL` environment variable
 - Check CORS settings on the API
 - Ensure API is deployed and accessible
+
+**API Key Authentication Errors**
+- **"Invalid API key" errors**: Either generate a valid API key or remove the `NEXT_PUBLIC_API_KEY` environment variable entirely
+- **500 Internal Server Error**: Usually caused by invalid API key format - check that the key follows the format `ap_keyid_secret`
+- **Authentication working locally but failing in production**: Verify the `NEXT_PUBLIC_API_KEY` is set correctly in both GitHub Actions secrets and Cloudflare Pages environment variables
+- **"Failed to load leaderboard data"**: Often indicates an API key issue - try removing the `NEXT_PUBLIC_API_KEY` environment variable if you only need public features
 
 **Static Export Issues**
 - Make sure you're using `next export` compatible features

@@ -4,13 +4,13 @@
 
 ## Live Services
 
-- [Production API](https://agentprobe-community-production.nikola-balic.workers.dev): Backend API with 19+ endpoints for data submission and retrieval
+- [Production API](https://agentprobe-community-production.nikola-balic.workers.dev): Backend API with 20+ endpoints for data submission and retrieval
 - [Production Dashboard](https://dashboard.agentprobe.dev): Interactive web interface for visualizing community test results
 - [API Health Check](https://agentprobe-community-production.nikola-balic.workers.dev/health): Live system status and statistics
 
 ## API Documentation
 
-- [Complete API Reference](https://dashboard.agentprobe.dev/docs/api/endpoints/): All 19 endpoints with authentication and examples
+- [Complete API Reference](https://dashboard.agentprobe.dev/docs/api/endpoints/): All 20 endpoints with authentication and examples
 - [Authentication Guide](https://dashboard.agentprobe.dev/docs/api/authentication/): API key setup, permissions, and security
 - [Database Schema](https://dashboard.agentprobe.dev/docs/api/database/): Complete data model and relationships
 - [Deployment Guide](https://dashboard.agentprobe.dev/docs/api/deployment/): Production deployment and configuration
@@ -103,6 +103,10 @@ curl -X POST https://agentprobe-community-production.nikola-balic.workers.dev/ap
 - **Security Monitoring**: Comprehensive audit logging and threat detection
 - **Infrastructure**: Cloudflare's enterprise security features
 
+## . Documentation
+
+- [CLI Reference](https://dashboard.agentprobe.dev/docs/agentprobe_docs/): Complete reference for all AgentProbe commands and options.
+
 ## Api Documentation
 
 - [AgentProbe Community Authentication Setup](https://dashboard.agentprobe.dev/docs/api/authentication/): This document provides a comprehensive guide for setting up and managing the authentication system in AgentProbe Community.
@@ -122,4 +126,4 @@ curl -X POST https://agentprobe-community-production.nikola-balic.workers.dev/ap
 - [Dashboard User Guide](https://dashboard.agentprobe.dev/docs/user-guides/dashboard-guide/): Complete guide to using the AgentProbe Community Dashboard for analyzing CLI tool testing data and community insights.
 - [Getting Started with AgentProbe Community](https://dashboard.agentprobe.dev/docs/user-guides/getting-started/): Welcome to AgentProbe Community! This guide will help you get started with using both the API and dashboard to submit test results and analyze community data.
 
-*Documentation automatically generated on 2025-08-05T17:44:18.881Z*
+*Documentation automatically generated on 2025-08-06T12:22:39.499Z*

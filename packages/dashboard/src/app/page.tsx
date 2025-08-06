@@ -1,6 +1,7 @@
 'use client';
 
 import { StatsOverview } from '@/components/dashboard/stats-overview';
+import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { SuccessRateChart } from '@/components/charts/success-rate-chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -29,28 +30,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
         
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest test submissions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Loading recent activity...
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Real-time updates will appear here
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <RecentActivity />
       </div>
     </div>
   );

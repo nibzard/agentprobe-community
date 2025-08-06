@@ -43,6 +43,7 @@ export interface ToolStatsResponse {
   avg_duration: number;
   avg_cost: number;
   common_friction_points: string[];
+  common_versions: string[]; // New: common tool versions
   scenarios: Record<string, {
     total_runs: number;
     success_rate: number;

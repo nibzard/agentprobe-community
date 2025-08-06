@@ -2,9 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Grade } from '@/components/ui/grade';
 import { ExportButton } from '@/components/dashboard/export-button';
 import { useLeaderboard } from '@/hooks/use-api';
 import { formatPercentage, formatNumber } from '@/lib/utils';
+import { calculateGrade } from '@/lib/grades';
 import { Trophy, Medal, Award, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
@@ -81,33 +83,39 @@ export default function LeaderboardPage() {
             </div>
           ) : leaderboard && leaderboard.length > 0 ? (
             <div className="space-y-2">
-              {leaderboard.map((entry, index) => (
-                <div
-                  key={entry.tool}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="flex items-center space-x-4">
-                    {getRankIcon(index)}
-                    <div>
-                      <Link
-                        href={`/tools/${encodeURIComponent(entry.tool)}`}
-                        className="font-semibold hover:underline"
-                      >
-                        {entry.tool}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">
-                        {formatNumber(entry.total_runs)} test runs
-                      </p>
+              {leaderboard.map((entry, index) => {
+                const grade = calculateGrade(entry.success_rate);
+                return (
+                  <div
+                    key={entry.tool}
+                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex items-center space-x-4">
+                      {getRankIcon(index)}
+                      <div>
+                        <Link
+                          href={`/tools/${encodeURIComponent(entry.tool)}`}
+                          className="font-semibold hover:underline"
+                        >
+                          {entry.tool}
+                        </Link>
+                        <p className="text-sm text-muted-foreground">
+                          {formatNumber(entry.total_runs)} test runs
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <div className="font-bold text-lg">
+                          {formatPercentage(entry.success_rate)}
+                        </div>
+                        <p className="text-sm text-muted-foreground">success rate</p>
+                      </div>
+                      <Grade grade={grade} size="md" />
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg">
-                      {formatPercentage(entry.success_rate)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">success rate</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">

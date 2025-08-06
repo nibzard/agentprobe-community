@@ -11,12 +11,22 @@ export interface ExecutionInfo {
   total_turns: number;
   success: boolean;
   error_message?: string;
+  cost?: number | null;
 }
 
 export interface AnalysisInfo {
   friction_points: string[];
   help_usage_count: number;
   recommendations: string[];
+  agent_summary?: string;
+  ax_score?: string;
+}
+
+// Tool version detection info (new)
+export interface ToolVersionInfo {
+  tool_version?: string;
+  version_detection_method?: string;
+  version_detection_success?: boolean;
 }
 
 export interface ResultSubmission {
@@ -25,8 +35,10 @@ export interface ResultSubmission {
   tool: string;
   scenario: string;
   client_info: ClientInfo;
+  tool_version_info?: ToolVersionInfo; // New tool version data
   execution: ExecutionInfo;
   analysis: AnalysisInfo;
+  full_output?: string; // Complete structured output JSON
   client_id?: string; // Generated server-side if not provided
 }
 
@@ -37,6 +49,7 @@ export interface ToolStatsResponse {
   avg_duration: number;
   avg_cost: number;
   common_friction_points: string[];
+  common_versions: string[]; // New: common tool versions
   scenarios: Record<string, ScenarioStats>;
 }
 
@@ -208,6 +221,43 @@ export interface HealthCheckResponse {
     total_scenarios: number;
     last_submission: string | null;
   };
+}
+
+// Enhanced result data (includes all new fields)
+export interface EnhancedResult {
+  id: number;
+  run_id: string;
+  timestamp: string;
+  tool: string;
+  scenario: string;
+  
+  // Client info
+  agentprobe_version: string;
+  os: string;
+  python_version: string;
+  
+  // Tool version info
+  tool_version?: string;
+  version_detection_method?: string;
+  version_detection_success?: boolean;
+  
+  // Execution data
+  duration: number;
+  total_turns: number;
+  success: boolean;
+  error_message?: string;
+  cost?: number;
+  
+  // Enhanced analysis
+  agent_summary?: string;
+  ax_score?: string;
+  friction_points: string[];
+  help_usage_count: number;
+  recommendations: string[];
+  full_output?: string;
+  
+  // Client ID
+  client_id: string;
 }
 
 // Authentication types

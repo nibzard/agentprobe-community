@@ -24,7 +24,8 @@
       "Bash(pnpm wrangler deploy:*)",
       "Bash(pnpm --filter @agentprobe/api run build)",
       "Bash(pnpm --filter @agentprobe/api run type-check)",
-      "Bash(pnpm -w run deploy:dashboard:staging)"
+      "Bash(pnpm -w run deploy:dashboard:staging)",
+      "Bash(wrangler d1 execute:*)"
     ],
     "deny": []
   }

@@ -47,6 +47,9 @@ export interface ToolStatsResponse {
   total_runs: number;
   success_rate: number;
   avg_duration: number;
+  median_duration: number;
+  p95_duration: number;
+  max_duration: number;
   avg_cost: number;
   common_friction_points: string[];
   common_versions: string[]; // New: common tool versions
@@ -57,6 +60,9 @@ export interface ScenarioStats {
   total_runs: number;
   success_rate: number;
   avg_duration: number;
+  median_duration: number;
+  p95_duration: number;
+  max_duration: number;
 }
 
 export interface LeaderboardEntry {
@@ -159,6 +165,9 @@ export interface ToolComparisonResponse {
     total_runs: number;
     success_rate: number;
     avg_duration: number;
+    median_duration: number;
+    p95_duration: number;
+    max_duration: number;
     common_friction_points: string[];
     scenarios: Record<string, ScenarioStats>;
   }>;
@@ -172,6 +181,9 @@ export interface ScenarioDifficultyEntry {
   total_runs: number;
   avg_success_rate: number;
   avg_duration: number;
+  median_duration: number;
+  p95_duration: number;
+  max_duration: number;
   friction_point_count: number;
   tools_tested: number;
 }

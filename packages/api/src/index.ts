@@ -345,6 +345,46 @@ function calculateDifficultyScore(
   );
 }
 
+function calculatePercentile(values: number[], percentile: number): number {
+  if (values.length === 0) return 0;
+  
+  // Sort values in ascending order
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+  return sorted[Math.max(0, index)];
+}
+
+function calculateMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+  
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+  return sorted[mid];
+}
+
+function calculateDurationStats(durations: number[]): {
+  avg: number;
+  median: number;
+  p95: number;
+  max: number;
+} {
+  if (durations.length === 0) {
+    return { avg: 0, median: 0, p95: 0, max: 0 };
+  }
+  
+  const sum = durations.reduce((a, b) => a + b, 0);
+  return {
+    avg: sum / durations.length,
+    median: calculateMedian(durations),
+    p95: calculatePercentile(durations, 95),
+    max: Math.max(...durations)
+  };
+}
+
 async function processSubmission(db: any, submission: ResultSubmission, clientId: string) {
   // Insert result with enhanced fields
   await db.insert(results).values({
@@ -1213,6 +1253,21 @@ app.get('/api/v1/scenarios/difficulty', optionalAuthMiddleware(), async (c) => {
     
     const frictionMap = new Map(frictionStats.map(f => [f.scenario, f.frictionCount || 0]));
     
+    // Get raw duration data for percentile calculations
+    const scenarioNames = scenarioStats.map(s => s.scenario);
+    const rawDurations = await db.select({
+      scenario: results.scenario,
+      duration: results.duration
+    })
+    .from(results)
+    .where(scenarioNames.length > 0 ? sql`${results.scenario} IN (${scenarioNames.map(name => `'${name}'`).join(',')})` : sql`1=1`);
+    
+    const durationsByScenario = rawDurations.reduce((acc, row) => {
+      if (!acc[row.scenario]) acc[row.scenario] = [];
+      acc[row.scenario].push(row.duration);
+      return acc;
+    }, {} as Record<string, number[]>);
+
     // Calculate difficulty scores
     const scenarios: ScenarioDifficultyEntry[] = scenarioStats.map(stat => {
       const successRate = stat.totalRuns > 0 ? stat.successfulRuns / stat.totalRuns : 0;
@@ -1226,12 +1281,18 @@ app.get('/api/v1/scenarios/difficulty', optionalAuthMiddleware(), async (c) => {
         stat.totalRuns
       );
       
+      const scenarioDurations = durationsByScenario[stat.scenario] || [];
+      const durationStats = calculateDurationStats(scenarioDurations);
+      
       return {
         scenario: stat.scenario,
         difficulty_score: Math.round(difficultyScore * 100) / 100,
         total_runs: stat.totalRuns,
         avg_success_rate: Math.round(successRate * 10000) / 100, // Percentage with 2 decimals
         avg_duration: Math.round(avgDuration * 100) / 100,
+        median_duration: Math.round(durationStats.median * 100) / 100,
+        p95_duration: Math.round(durationStats.p95 * 100) / 100,
+        max_duration: Math.round(durationStats.max * 100) / 100,
         friction_point_count: Math.round(frictionPointCount * 100) / 100,
         tools_tested: stat.uniqueTools,
       };
@@ -1458,14 +1519,33 @@ app.get('/api/v1/stats/tool/:tool', readOnly(), async (c) => {
     const successRate = totalRuns > 0 ? successfulRuns / totalRuns : 0;
     const avgDuration = stats.reduce((sum, s) => sum + (s.avgDuration * s.totalRuns), 0) / totalRuns;
     
-    // Get scenarios
+    // Get raw duration data for percentile calculations
+    const rawResults = await db.select({
+      duration: results.duration,
+      scenario: results.scenario
+    })
+      .from(results)
+      .where(eq(results.tool, tool));
+    
+    const allDurations = rawResults.map(r => r.duration);
+    const overallDurationStats = calculateDurationStats(allDurations);
+    
+    // Get scenarios with percentiles
     const scenarios: Record<string, any> = {};
     for (const stat of stats) {
       if (stat.scenario) {
+        const scenarioDurations = rawResults
+          .filter(r => r.scenario === stat.scenario)
+          .map(r => r.duration);
+        const scenarioStats = calculateDurationStats(scenarioDurations);
+        
         scenarios[stat.scenario] = {
           total_runs: stat.totalRuns,
           success_rate: stat.successRate,
           avg_duration: stat.avgDuration,
+          median_duration: scenarioStats.median,
+          p95_duration: scenarioStats.p95,
+          max_duration: scenarioStats.max,
         };
       }
     }
@@ -1499,6 +1579,9 @@ app.get('/api/v1/stats/tool/:tool', readOnly(), async (c) => {
       total_runs: totalRuns,
       success_rate: successRate,
       avg_duration: avgDuration || 0,
+      median_duration: overallDurationStats.median,
+      p95_duration: overallDurationStats.p95,
+      max_duration: overallDurationStats.max,
       avg_cost: stats.reduce((sum, s) => sum + ((s.avgCost || 0) * s.totalRuns), 0) / totalRuns || 0,
       common_friction_points: frictionPoints.map(fp => fp.frictionPoint),
       common_versions: commonVersions,

@@ -37,3 +37,16 @@ export function formatCost(value: number): string {
   }
   return `$${value.toFixed(3)}`
 }
+
+export function formatDurationRange(median: number, p95: number): string {
+  const medianStr = formatDuration(median);
+  const p95Str = formatDuration(p95);
+  if (median === p95) {
+    return medianStr;
+  }
+  return `${medianStr} (typ) • ${p95Str} (95%)`;
+}
+
+export function formatDurationWithP95(median: number, p95: number): string {
+  return `${formatDuration(median)} median • ${formatDuration(p95)} P95`;
+}

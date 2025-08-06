@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Grade, PerformanceIndicator } from '@/components/ui/grade';
 import { ExportButton } from '@/components/dashboard/export-button';
 import { useToolStats, useAggregateStats } from '@/hooks/use-api';
-import { formatPercentage, formatNumber, formatDuration, formatCost } from '@/lib/utils';
+import { formatPercentage, formatNumber, formatDuration, formatCost, formatDurationWithP95 } from '@/lib/utils';
 import { calculateGrade } from '@/lib/grades';
 import { Activity, Target, Clock, DollarSign, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -119,20 +119,36 @@ export function ToolPageClient({ toolName }: ToolPageClientProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
+            <CardTitle className="text-sm font-medium">Duration</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {statsLoading ? (
                 <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+              ) : toolStats?.median_duration !== undefined ? (
+                formatDuration(toolStats.median_duration)
               ) : (
                 formatDuration(toolStats?.avg_duration || 0)
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Average completion time
-            </p>
+            <div className="text-sm text-muted-foreground mt-1">
+              {statsLoading ? (
+                <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+              ) : toolStats?.p95_duration !== undefined ? (
+                <>
+                  <span className="text-xs">Median • P95: {formatDuration(toolStats.p95_duration)}</span>
+                  {toolStats.max_duration > toolStats.p95_duration * 1.5 && (
+                    <div className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Max: {formatDuration(toolStats.max_duration)}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <span className="text-xs">Average completion time</span>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -187,7 +203,12 @@ export function ToolPageClient({ toolName }: ToolPageClientProps) {
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <span>{formatPercentage(scenarioStats.success_rate)}</span>
-                        <span>{formatDuration(scenarioStats.avg_duration)}</span>
+                        <div className="flex flex-col items-end">
+                          <span>{scenarioStats.median_duration !== undefined ? formatDuration(scenarioStats.median_duration) : formatDuration(scenarioStats.avg_duration)}</span>
+                          {scenarioStats.p95_duration !== undefined && scenarioStats.p95_duration !== scenarioStats.median_duration && (
+                            <span className="text-xs text-amber-600">P95: {formatDuration(scenarioStats.p95_duration)}</span>
+                          )}
+                        </div>
                         <span>{formatNumber(scenarioStats.total_runs)} runs</span>
                       </div>
                     </div>

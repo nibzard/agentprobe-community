@@ -147,9 +147,16 @@ export default function ScenariosPage() {
                     
                     <div className="text-center">
                       <div className="font-semibold">
-                        {formatDuration(scenario.avg_duration)}
+                        {scenario.median_duration !== undefined ? formatDuration(scenario.median_duration) : formatDuration(scenario.avg_duration)}
                       </div>
-                      <div className="text-xs text-muted-foreground">Duration</div>
+                      <div className="text-xs text-muted-foreground">
+                        {scenario.median_duration !== undefined ? 'Median' : 'Duration'}
+                      </div>
+                      {scenario.p95_duration !== undefined && scenario.p95_duration > scenario.median_duration * 1.2 && (
+                        <div className="text-xs text-amber-600 mt-1">
+                          P95: {formatDuration(scenario.p95_duration)}
+                        </div>
+                      )}
                     </div>
                     
                     <div className="text-center">
